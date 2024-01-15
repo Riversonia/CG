@@ -87,6 +87,7 @@ class GNN(nn.Module):
         # 计算损失值
         y = data.y.to(device)
         loss = self.loss_function(outputs, y)
+        # print(loss) # debug
 
         # 累加训练次数
         self.counter += 1
@@ -96,7 +97,7 @@ class GNN(nn.Module):
             self.progress.append(loss.item())
 
         # 每1000次输出训练次数
-        if (self.counter % 1000 == 0):
+        if (self.counter % 100 == 0):
             print(f"counter={self.counter}, loss={loss.item()}")
 
         # 梯度清零, 反向传播, 更新权重
@@ -117,17 +118,18 @@ class GNN(nn.Module):
     # 绘制损失变化图
     def plot_progress(self):
         plt.plot(range(len(self.progress)), self.progress)
+        plt.show()
 
 model = GNN()
 model.to(device)
 
-for i in range(1):
+for i in range(1001):
     for data in train_loader:
         # print(data,'num_graphs:',data.num_graphs)
         model.train(data)
 
-#torch.set_printoptions(precision=4,sci_mode=False) #pytorch不使用科学计数法显示
-
 for data in test_loader:
     acc=model.test(data)
     print(acc)
+
+model.plot_progress()
