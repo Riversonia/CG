@@ -14,8 +14,8 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 from torch_geometric.nn import global_mean_pool
 
-strPathRead = "D:\CoalGangueCode\ReadDataset\sliceCM_1.csv"
-strPathSave = "D:\CoalGangueCode\SaveDataset\sliceCM_1.dataset"
+strPathRead = "D:\CG\CoalGangueCode\ReadDataset\sliceC_1.csv"
+strPathSave = "D:\CG\CoalGangueCode\SaveDataset\sliceC_1.dataset"
 
 import torch
 
@@ -89,14 +89,14 @@ def CreateDataset(readFile, CCfactor):   # 将文件readFile构建成为数据�
 
         # 进度显示
         if (row + 1) % 100 == 0:
-            print(readFile, row + 1, "/500 finished")
+            print(readFile, row + 1, "/12000 finished")
 
     # 最后函数将返回整理好的graph数据集
     # len(graph) = 2400
     # graph[i] = Data(x=x, y=y, edge_index=edge_index, edge_attr=edge_attr)
 
     # 随机打乱数据集的索引，并返回整理好的数据集
-    random.shuffle(graph)
+    # random.shuffle(graph)
     return graph
 
     # print(len(edge_attr))
@@ -118,7 +118,7 @@ class GCN(torch.nn.Module):
         self.loss_function = torch.nn.MSELoss()
 
         # 创建优化器
-        self.optimiser = torch.optim.Adam(self.parameters(), lr=0.01, weight_decay=5e-4)
+        self.optimiser = torch.optim.Adam(self.parameters(), lr=0.001, weight_decay=5e-4)
 
         # 训练次数计数
         self.counter = 0
@@ -156,7 +156,7 @@ class GCN(torch.nn.Module):
             self.progress.append(loss.item())
 
         # 每1000次训练输出训练次数
-        if (self.counter % 100 == 0):
+        if (self.counter % 1000 == 0):
             print(f"counter = {self.counter}, loss = {loss.item()}")
 
         self.optimiser.zero_grad()
@@ -167,8 +167,13 @@ class GCN(torch.nn.Module):
         outputs = self.forward(data.x, data.edge_index, data.batch)
         y = data.y
         # acc = sum(torch.abs(y - outputs) <= 0.05) / len(data.y)
-        acc = torch.abs(y - outputs) / y
-        return acc
+        acc = torch.abs(y - outputs) # / y *100
+        for num in range (0, len(acc)):
+            sum = acc[num, 1]
+            # print(acc[num, 1])
+
+        print(len(acc))
+        return sum / len(acc) * 100
 
     def plot_progress(self):
         plt.plot(range(len(self.progress)),self.progress)
@@ -197,10 +202,16 @@ def main():
     print(f'graph_num_nodes_features: {dataset[0].num_node_features}')
     print(f'graph_num_edges_features: {dataset[0].num_edge_features}')
 
-    trainDataset = dataset[ : 400]
-    print(trainDataset[0: 10])
-    testDataset = dataset[400: ]
-    print(testDataset[0: 10])
+    trainDataset = dataset[ : 9600]
+    # print(trainDataset[0: 5])
+    # random.shuffle(trainDataset)
+    # print(trainDataset[0: 5])
+
+    testDataset = dataset[9600: ]
+    # print(testDataset[0: 5])
+    # random.shuffle(testDataset)
+    # print(testDataset[0: 5])
+
 
     trainLoader = DataLoader(trainDataset, batch_size=16, shuffle=False)
     testLoader = DataLoader(testDataset, batch_size=len(testDataset))
@@ -208,12 +219,12 @@ def main():
     # 开始训练
     print(device)
     model = GCN().to(device)
-    for i in range (0, len(trainDataset)):
+    for i in range(0, len(trainDataset)):
         trainDataset[i].to(device)
     for i in range(0, len(testDataset)):
         testDataset[i].to(device)
 
-    for i in range(100):
+    for i in range(10):
         for data in trainLoader:
             # try:  # debug
             data.edge_index = torch.tensor(data.edge_index, dtype=torch.int64)
@@ -227,6 +238,7 @@ def main():
         acc = model.test(data)
         print(acc)
 
+    # 损失率变化趋势画图
     model.plot_progress()
     plt.show()
 

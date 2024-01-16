@@ -1,12 +1,15 @@
 import requests
 import re
 import csv
-from bs4 import BeautifulSoup
 import pandas as pd
 
 # set read file path
-strPathRead = "D:\研0\组会\\20231220 煤矸数据裁剪处理完成 GNN模型确立\Coal gangue datset cropped and integrated\sliceFinished\sliceCM_1.csv"
-strPathSave = "D:\CoalGangueCode\ReadDataset\sliceCM_1.csv"
+#
+# strPathRead = "D:\研0\组会\\20231220 煤矸数据裁剪处理完成 GNN模型确立\Coal gangue datset cropped and integrated\sliceFinished\sliceCM_1.csv"
+# strPathSave = "D:\CoalGangueCode\ReadDataset\sliceCM_1.csv"
+
+strPathRead = "D:\研0\组会\\20231220 煤矸数据裁剪处理完成 GNN模型确立\Coal gangue datset cropped and integrated\sliceFinished\sliceC_1.csv"
+strPathSave = "D:\CoalGangueCode\ReadDataset\sliceC_1.csv"
 
 def DatasetHeaderAdd(strPath, strSave, header):
     # add header to data.csv
