@@ -12,7 +12,6 @@ import random
 warnings.filterwarnings("ignore", category=Warning)
 strReadFile = "F:\Gitrepo\Python\CG\CG\createDataset\data\\raw\sliceCM_1.csv"
 
-from torch_geometric.datasets import TUDataset
 # 这里给出大家注释方便理解
 # 程序只要第一次运行后，processed文件生成后就不会执行proces函数，而且只要不重写download()和process()方法，也会直接跳过下载和处理。
 class MyOwnDataset(InMemoryDataset):
@@ -29,12 +28,12 @@ class MyOwnDataset(InMemoryDataset):
     @property
     def raw_file_names(self):
         # pass # 不能使用pass，会报join() argument must be str or bytes, not 'NoneType'错误
-        return ["sliceCM_1.csv"]
+        return ["sliceC_1.csv"]
 
     # 首先寻找processed_paths[0]路径下的文件名也就是之前process方法保存的文件名
     @property
     def processed_file_names(self):
-        return ["sliceCM_1_seed115"]
+        return ["sliceC_1_seed115"]
 
     # 用于从网上下载数据集，下载原始数据到指定的文件夹下，自己的数据集可以跳过
     def download(self):

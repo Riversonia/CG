@@ -31,13 +31,12 @@ def CreateHeader(num_feature):
     print(len(header))
     return header
 
-def main():
+if __name__ == "__main__":
     header = CreateHeader(1024)
     DatasetHeaderAdd(strPathRead, strPathSave, header)
     data = pd.read_csv(strPathSave, header=0, index_col=0)
     print(data)
 
-main()
 
 
 
