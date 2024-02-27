@@ -8,7 +8,6 @@ import pandas as pd
 import numpy as np
 import random
 
-
 warnings.filterwarnings("ignore", category=Warning)
 strReadFile = "F:\Gitrepo\Python\CG\CG\dataset\data\\raw\sliceCM_1.csv"
 

@@ -7,8 +7,8 @@ from torch_geometric.nn import global_mean_pool
 from createDataset import MyOwnDataset
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+delta = 0.01
 
-# delta = 0.01
 class GCN(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -34,20 +34,19 @@ class GCN(torch.nn.Module):
         # 创建池化层
         # self.global_mean_pool = global_mean_pool(x=x, batch=batch)
 
-    def forward(self, x, edge_index, edge_attr, batch):
+    def forward(self, x, edge_index, batch):
 
         x = x.to(device)
-        edge_index = edge_index.to(device)      # edge index
-        edge_attr = edge_attr.to(device)        # edge attribute
+        edge_index = edge_index.to(device)
         batch = batch.to(device)
 
-        x = self.conv1(x, edge_index, edge_attr)
+        x = self.conv1(x, edge_index)
         x = x.relu()
-        x = self.conv2(x, edge_index, edge_attr)
+        x = self.conv2(x, edge_index)
         x = x.relu()
-        x = self.conv3(x, edge_index, edge_attr)
+        x = self.conv3(x, edge_index)
         x = x.relu()
-        x = self.conv4(x, edge_index, edge_attr)
+        x = self.conv4(x, edge_index)
         x = x.relu()
         x = global_mean_pool(x=x, batch=batch)
         out = self.out(x)
@@ -55,7 +54,7 @@ class GCN(torch.nn.Module):
         return out
 
     def train_(self, data):
-        outputs = self.forward(data.x, data.edge_index, data.edge_attr, data.batch)
+        outputs = self.forward(data.x, data.edge_index, data.batch)
 
         # 计算损失
         y = data.y.to(device)
@@ -79,24 +78,47 @@ class GCN(torch.nn.Module):
 
     def test(self, data):
         labels_, outputs_ = [], []
-        outputs = self.forward(data.x, data.edge_index, data.edge_attr, data.batch)
+        outputs = self.forward(data.x, data.edge_index, data.batch)
         outputs = outputs.permute(1, 0)
-
+        outputs = outputs.squeeze(0)
         y = data.y.to(device)
-        delta = torch.abs(y - outputs)
 
-        # acc代表误差率，越小越好
-        # print(f"testdata_y = {data.y}, \n "
-        #       f"output = {outputs}, \n "
-        #       f"delta = {delta}")
-        sum = delta.sum().item()
-        return sum / len(data)
+        outputs = outputs.detach().cpu().numpy()
+        labels = data.y.detach().cpu().numpy()
+
+        for index in range (0, len(labels)):
+            if labels[index] == 0:
+                labels_.append(delta)
+            else:
+                labels_.append(labels[index])
+
+        for index in range (0, len(outputs)):
+            outputs_.append(outputs[index])
+
+        labels_ = np.array(labels_)
+        outputs_ = np.array(outputs_)
+
+        return labels_, outputs_
 
     def plot_progress(self):
         plt.plot(range(len(self.progress)), self.progress)
 
+def mse(y, y_hat):
+    diff2 = []
+    for index in range(0, len(y)):
+        diff2.append( (y[index] - y_hat[index]) ** 2 )
+    mse = np.sum(diff2) / len(y)
+    return mse
+
+def mae(y, y_hat):
+    diff = []
+    for index in range(0, len(y)):
+        diff.append( abs(y[index] - y_hat[index]) )
+    mae = np.sum(diff) / len(y)
+    return mae
 
 if __name__ == "__main__":
+
     datas = MyOwnDataset("F:\Gitrepo\Python\CG\CG\dataset\data")
     DataLoader(datas, batch_size=1, shuffle=False)
 
@@ -114,24 +136,23 @@ if __name__ == "__main__":
         for data in trainLoader:
             # try:  # debug
             data.edge_index = torch.tensor(data.edge_index, dtype=torch.int64)
-            data.edge_attr = torch.tensor(data.edge_attr)
             model.train_(data)
             # print(data[0])
             # except Exception as e: # debug
             # print(e)  # debug
+        for data in testLoader:
+            data.edge_index = torch.tensor(data.edge_index, dtype=torch.int64)
+            testLabels, testOutputs = model.test(data)
+            mseErr = mse(testLabels, testOutputs)
+            maeErr = mae(testLabels, testOutputs)
 
-
-
-    for data in testLoader:
-        data.edge_index = torch.tensor(data.edge_index, dtype=torch.int64)
-        data.edge_attr = torch.tensor(data.edge_attr)
-        deltaRate = model.test(data)
-        print(deltaRate)
+            print(f"MSE = {mseErr} \n"
+                  f"MAE = {maeErr} \n"
+                  f"diff = |{maeErr / 2}|")
 
     # 损失率变化趋势画图
     model.plot_progress()
     plt.show()
 
-    model = GCN()
-    torch.save(model.state_dict(), "6.pth")
+
 
