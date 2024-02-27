@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -141,16 +139,16 @@ if __name__ == "__main__":
             # print(data[0])
             # except Exception as e: # debug
             # print(e)  # debug
+        for data in testLoader:
+            data.edge_index = torch.tensor(data.edge_index, dtype=torch.int64)
+            testLabels, testOutputs = model.test(data)
+            mseErr = mse(testLabels, testOutputs)
+            maeErr = mae(testLabels, testOutputs)
 
-    for data in testLoader:
-        data.edge_index = torch.tensor(data.edge_index, dtype=torch.int64)
-        testLabels, testOutputs = model.test(data)
-        mseErr = mse(testLabels, testOutputs)
-        maeErr = mae(testLabels, testOutputs)
+            print(f"MSE = {mseErr} \n"
+                  f"MAE = {maeErr} \n"
+                  f"diff = |{maeErr / 2}|")
 
-        print(f"MSE = {mseErr} \n"
-              f"MAE = {maeErr} \n"
-              f"diff = |{maeErr/2}|")
     # 损失率变化趋势画图
     model.plot_progress()
     plt.show()

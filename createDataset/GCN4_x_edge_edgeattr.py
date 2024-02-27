@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from torch_geometric.loader import DataLoader
@@ -7,6 +8,7 @@ from createDataset import MyOwnDataset
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
+# delta = 0.01
 class GCN(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -35,8 +37,8 @@ class GCN(torch.nn.Module):
     def forward(self, x, edge_index, edge_attr, batch):
 
         x = x.to(device)
-        edge_index = edge_index.to(device)
-        edge_attr = edge_attr.to(device)
+        edge_index = edge_index.to(device)      # edge index
+        edge_attr = edge_attr.to(device)        # edge attribute
         batch = batch.to(device)
 
         x = self.conv1(x, edge_index, edge_attr)
@@ -76,6 +78,7 @@ class GCN(torch.nn.Module):
         self.optimiser.step()
 
     def test(self, data):
+        labels_, outputs_ = [], []
         outputs = self.forward(data.x, data.edge_index, data.edge_attr, data.batch)
         outputs = outputs.permute(1, 0)
 
@@ -94,7 +97,7 @@ class GCN(torch.nn.Module):
 
 
 if __name__ == "__main__":
-    datas = MyOwnDataset("F:\Gitrepo\Python\CG\CG\createDataset\data")
+    datas = MyOwnDataset("F:\Gitrepo\Python\CG\CG\dataset\data")
     DataLoader(datas, batch_size=1, shuffle=False)
 
     trainDataset = datas[0: int(len(datas)* 0.8)]

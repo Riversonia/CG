@@ -1,5 +1,5 @@
 import torch
-from torch_geometric.data import InMemoryDataset, download_url
+from torch_geometric.data import InMemoryDataset
 from torch_geometric.data import Data
 from torch_geometric.data import DataLoader
 import warnings
@@ -10,7 +10,7 @@ import random
 
 
 warnings.filterwarnings("ignore", category=Warning)
-strReadFile = "F:\Gitrepo\Python\CG\CG\createDataset\data\\raw\sliceCM_1.csv"
+strReadFile = "F:\Gitrepo\Python\CG\CG\dataset\data\\raw\sliceCM_1.csv"
 
 # 这里给出大家注释方便理解
 # 程序只要第一次运行后，processed文件生成后就不会执行proces函数，而且只要不重写download()和process()方法，也会直接跳过下载和处理。
@@ -129,7 +129,7 @@ class MyOwnDataset(InMemoryDataset):
         torch.save((data, slices), self.processed_paths[0])
 
 # 数据集对象操作
-b = MyOwnDataset("F:\Gitrepo\Python\CG\CG\createDataset\data") # 创建数据集对象
+b = MyOwnDataset("F:\Gitrepo\Python\CG\CG\dataset\data") # 创建数据集对象
 data_loader = DataLoader(b, batch_size=1, shuffle=False) # 加载数据进行处理，每批次数据的数量为1
 for data in data_loader:
     print(data) # 按批次输出数据
