@@ -1,3 +1,10 @@
+"""
+Graph Convolutional Neural Network 4-Layer
+GCN4.py
+
+"""
+
+# Major import
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -6,9 +13,14 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.nn import global_mean_pool
 from createDataset import MyOwnDataset
 
+# other import
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+
+# Config and parameters
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 delta = 0.01
 
+# major class GCN
 class GCN(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -103,20 +115,6 @@ class GCN(torch.nn.Module):
     def plot_progress(self):
         plt.plot(range(len(self.progress)), self.progress)
 
-def mse(y, y_hat):
-    diff2 = []
-    for index in range(0, len(y)):
-        diff2.append( (y[index] - y_hat[index]) ** 2 )
-    mse = np.sum(diff2) / len(y)
-    return mse
-
-def mae(y, y_hat):
-    diff = []
-    for index in range(0, len(y)):
-        diff.append( abs(y[index] - y_hat[index]) )
-    mae = np.sum(diff) / len(y)
-    return mae
-
 if __name__ == "__main__":
 
     datas = MyOwnDataset("F:\Gitrepo\Python\CG\CG\dataset\data")
@@ -143,12 +141,16 @@ if __name__ == "__main__":
         for data in testLoader:
             data.edge_index = torch.tensor(data.edge_index, dtype=torch.int64)
             testLabels, testOutputs = model.test(data)
-            mseErr = mse(testLabels, testOutputs)
-            maeErr = mae(testLabels, testOutputs)
+            mseErr = mean_squared_error(testLabels, testOutputs)
+            maeErr = mean_absolute_error(testLabels, testOutputs)
+            R2 = r2_score(testLabels, testOutputs)
+
 
             print(f"MSE = {mseErr} \n"
                   f"MAE = {maeErr} \n"
+                  f"R^2 = {R2} \n"
                   f"diff = |{maeErr / 2}|")
+
 
     # 损失率变化趋势画图
     model.plot_progress()
